@@ -11,4 +11,4 @@ Simulated limit order book with stochastic order flow, and an Avellaneda-Stoikov
 * \[x] Limit order book engine
 * \[x] Stochastic order flow generator
 * \[x] Market making agent
-* \[ ] Visualisation
+* \[x] Visualisation

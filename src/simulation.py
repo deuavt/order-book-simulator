@@ -99,14 +99,40 @@ class Simulate:
                 'pnl': agent.pnl_record[-1][1]}
     
     def plot_market(self):
-        """Plot & show best bid, best ask, and midprice in matplotlib."""
+        """Plot & show all relevant data from testing with matplotlib."""
         record = self.record
-        # Market keys to be displayed.
-        stats = ['best_ask', 'midprice', 'best_bid']
-
+        fig, axes = plt.subplots(2, 2, figsize=(10,6))
+        fig.suptitle("LOB Stochastic Order Flow & Market Maker Agent Simulation", fontsize=16)
+        fig.canvas.manager.set_window_title("Order Book Simulation")
+        fig.subplots_adjust(hspace=0.3, wspace=0.3)
         x = range(len(record))
+
+        # Plot prices.
+        stats = ['best_ask', 'midprice', 'best_bid']
         for stat in stats:
             y = [frame[stat] for frame in record]
-            plt.plot(x, y)
-        plt.legend(stats)
+            axes[0][0].plot(x, y)
+        axes[0][0].set_xlabel("Time")
+        axes[0][0].set_ylabel("Dollars") 
+        axes[0][0].legend(stats, framealpha=0.3)
+        
+        # Plot spread.
+        y = [frame['spread'] for frame in record]
+        axes[0][1].plot(x, y)
+        axes[0][1].set_xlabel("Time")
+        axes[0][1].set_ylabel("Spread ($)") 
+
+        if self.agent != None:
+            # Plot P&L.
+            x, y = zip(*self.agent.pnl_record)
+            axes[1][0].plot(x, y)
+            axes[1][0].set_xlabel("Time")
+            axes[1][0].set_ylabel("P&L")
+
+            # Plot Inventory.
+            x, y = zip(*self.agent.inv_record)
+            axes[1][1].plot(x, y)
+            axes[1][1].set_xlabel("Time")
+            axes[1][1].set_ylabel("Inventory")
+
         plt.show()

@@ -4,7 +4,7 @@ from simulation import Simulate
 
 # Initialisation config
 initial_midprice = 100
-initial_orders = 20
+initial_orders = 1000
 
 # Simulation config
 steps = 10 ** 4
@@ -13,9 +13,9 @@ market_p = 0.2
 cancel_p = 0.1
 
 # Agent config; parameter optimisation to be added later.
-half_spread = 0.5
-order_volume = 10
-risk_aversion = 0.4
+half_spread = 0.2
+order_volume = 2
+risk_aversion = 0.05
 variance = 0.01  # Estimation of market; to be automated later.
 
 # Run simulation
