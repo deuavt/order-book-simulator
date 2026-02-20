@@ -1,0 +1,31 @@
+"""Run limit order book simulation with market making agent."""
+
+from simulation import Simulate
+
+# Initialisation config
+initial_midprice = 100
+initial_orders = 20
+
+# Simulation config
+steps = 10 ** 4
+limit_p = 0.5
+market_p = 0.2
+cancel_p = 0.1
+
+# Agent config; parameter optimisation to be added later.
+half_spread = 0.5
+order_volume = 10
+risk_aversion = 0.4
+variance = 0.01  # Estimation of market; to be automated later.
+
+# Run simulation
+sim = Simulate(steps=steps, limit_p=limit_p, market_p=market_p, cancel_p=cancel_p)
+
+sim.initialise_market(initial_midprice=initial_midprice,  initial_orders=initial_orders)
+sim.initialise_agent(risk_aversion=risk_aversion,  variance=variance,  half_spread=half_spread, order_volume=order_volume)
+
+sim.run()
+
+# Display results
+print(sim.agent_stats())
+sim.plot_market()
