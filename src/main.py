@@ -2,7 +2,7 @@
 
 from simulation import Simulate
 
-# Initialisation config
+# Initialisation config.
 initial_midprice = 100
 initial_orders = 1000
 

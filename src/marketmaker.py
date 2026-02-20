@@ -1,7 +1,7 @@
 """Avellaneda-Stoikov market maker agent managing inventory with reservation price adjustment."""
 
 class MarketMaker:
-    """Avellaneda-Stoikov market maker agent"""
+    """Avellaneda-Stoikov market maker agent."""
     def __init__(self, book, record, steps, risk_aversion, variance, half_spread, order_volume):
         self.book = book
         self.record = record
@@ -33,13 +33,13 @@ class MarketMaker:
         var = self.variance
         T = self.steps
         t = len(self.record)
-        # Avellaneda-Stoikov reservation price formula
+        # Avellaneda-Stoikov reservation price formula.
         r = s - q * gam * var * (T - t) / T
         return r
     
     def __update_values(self):
         book = self.book
-        # Update internal values for any bid fills
+        # Update internal values for any bid fills.
         bid_id = self.bid['id']
         if bid_id in book.lookup:
             fill = self.bid['volume'] - book.lookup[bid_id]['volume']
@@ -48,7 +48,7 @@ class MarketMaker:
         elif bid_id is not None:
             self.cash -= self.bid['volume'] * self.bid['price']
             self.inventory += self.bid['volume']
-        # Update internal values for any ask fills
+        # Update internal values for any ask fills.
         ask_id = self.ask['id']
         if ask_id in book.lookup:
             fill = self.ask['volume'] - book.lookup[ask_id]['volume']

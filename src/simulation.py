@@ -118,7 +118,8 @@ class Simulate:
         
         # Plot spread.
         y = [frame['spread'] for frame in record]
-        axes[0][1].plot(x, y)
+        # From second point to hide initial jump before agent orders.
+        axes[0][1].plot(x[1:], y[1:])
         axes[0][1].set_xlabel("Time")
         axes[0][1].set_ylabel("Spread ($)") 
 

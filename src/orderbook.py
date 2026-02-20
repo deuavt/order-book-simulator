@@ -12,7 +12,7 @@ class OrderBook:
     def __repr__(self):
         return str(self.orders)
     
-    def __sub_ask(self, price, volume):
+    def __submit_ask(self, price, volume):
         asks_dict, bids_dict = self.orders['asks'], self.orders['bids']
         # Matches by walking price levels with price-time priority.
         while bids_dict and volume > 0:
@@ -34,7 +34,7 @@ class OrderBook:
         self.lookup[self.__tag] = asks_dict[price][-1]
         return False
 
-    def __sub_bid(self, price, volume):
+    def __submit_bid(self, price, volume):
         asks_dict, bids_dict = self.orders['asks'], self.orders['bids']
         # Matches by walking price levels with price-time priority.
         while asks_dict and volume > 0:
@@ -62,17 +62,17 @@ class OrderBook:
             return False
         
         if direction == -1:
-            if self.__sub_ask(price, volume):
+            if self.__submit_ask(price, volume):
                 return True
         else:
-            if self.__sub_bid(price, volume):
+            if self.__submit_bid(price, volume):
                 return True
             
         self.__tag += 1
         return self.__tag - 1
     
     def cancel_order(self, tag):
-        """Cancel an order by tag (lazy deletion)"""
+        """Cancel an order by tag (lazy deletion)."""
         if tag not in self.lookup:
             return False
         # Lazy deletion; zero volume orders are cleaned during matching/lookup.
