@@ -12,6 +12,8 @@ class Simulate:
         self.market_p = market_p
         self.cancel_p = cancel_p
 
+        self.cuts = [limit_p, limit_p + market_p, limit_p + market_p + cancel_p]
+
         self.book = OrderBook()
         self.record = []
         self.agent = None
@@ -58,19 +60,15 @@ class Simulate:
                 continue
 
             gen = random()
-            cut1 = self.limit_p
-            cut2 = cut1 + self.market_p
-            cut3 = cut2 + self.cancel_p
-
             # Limit order.
-            if gen <= cut1:
+            if gen <= self.cuts[0]:
                 direction = choice((-1, 1))
                 volume = randint(1, 10)
                 offset = uniform(0.5, 5)
                 price = book.get_midprice() - direction * offset
                 book.submit_order(direction, price, volume)
             # Market order. 
-            elif cut1 < gen <= cut2:
+            elif self.cuts[0] < gen <= self.cuts[1]:
                 direction = choice((-1, 1))
                 volume = randint(1, 10)
                 if direction == -1:
@@ -79,7 +77,7 @@ class Simulate:
                     price = book.get_best_ask()
                 book.submit_order(direction, price, volume)
             # Cancellation. 
-            elif cut2 < gen <= cut3:
+            elif self.cuts[1] < gen <= self.cuts[2]:
                 if book.lookup:
                     key = choice(list(book.lookup.keys()))
                     book.cancel_order(key)
@@ -109,6 +107,7 @@ class Simulate:
 
         # Plot prices.
         stats = ['best_ask', 'midprice', 'best_bid']
+        axes[0][0].ticklabel_format(axis='y', style='plain', useOffset=False)
         for stat in stats:
             y = [frame[stat] for frame in record]
             axes[0][0].plot(x, y)
@@ -117,6 +116,7 @@ class Simulate:
         axes[0][0].legend(stats, framealpha=0.3)
         
         # Plot spread.
+        axes[0][1].ticklabel_format(axis='y', style='plain', useOffset=False)
         y = [frame['spread'] for frame in record]
         # From second point to hide initial jump before agent orders.
         axes[0][1].plot(x[1:], y[1:])
@@ -125,12 +125,14 @@ class Simulate:
 
         if self.agent != None:
             # Plot P&L.
+            axes[1][0].ticklabel_format(axis='y', style='plain', useOffset=False)
             x, y = zip(*self.agent.pnl_record)
             axes[1][0].plot(x, y)
             axes[1][0].set_xlabel("Time")
             axes[1][0].set_ylabel("P&L")
 
             # Plot Inventory.
+            axes[1][1].ticklabel_format(axis='y', style='plain', useOffset=False)
             x, y = zip(*self.agent.inv_record)
             axes[1][1].plot(x, y)
             axes[1][1].set_xlabel("Time")

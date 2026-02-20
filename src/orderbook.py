@@ -1,11 +1,12 @@
 """Limit order book engine with price-time priority matching and lazy cancellation."""
 
-from collections import deque, defaultdict
+from collections import deque
+from sortedcontainers import SortedDict
 
 class OrderBook:
     """Limit order book with matching engine."""
     def __init__(self):
-        self.orders = {'asks':defaultdict(deque), 'bids':defaultdict(deque)}
+        self.orders = {'asks':SortedDict(), 'bids':SortedDict()}
         self.lookup = {}
         self.__tag = 0
 
@@ -16,7 +17,7 @@ class OrderBook:
         asks_dict, bids_dict = self.orders['asks'], self.orders['bids']
         # Matches by walking price levels with price-time priority.
         while bids_dict and volume > 0:
-            max_bid = max(bids_dict)
+            max_bid = bids_dict.keys()[-1]
             if max_bid < price:
                 break
             max_bid_order = bids_dict[max_bid][0]
@@ -30,6 +31,8 @@ class OrderBook:
                     bids_dict.pop(max_bid)
         if volume == 0:
             return True
+        if price not in asks_dict:
+            asks_dict[price] = deque()
         asks_dict[price].append({'tag':self.__tag, 'volume':volume})
         self.lookup[self.__tag] = asks_dict[price][-1]
         return False
@@ -38,7 +41,7 @@ class OrderBook:
         asks_dict, bids_dict = self.orders['asks'], self.orders['bids']
         # Matches by walking price levels with price-time priority.
         while asks_dict and volume > 0:
-            min_ask = min(asks_dict)
+            min_ask = asks_dict.keys()[0]
             if min_ask > price:
                 break
             min_ask_order = asks_dict[min_ask][0]
@@ -52,6 +55,8 @@ class OrderBook:
                     asks_dict.pop(min_ask)
         if volume == 0:
             return True
+        if price not in bids_dict:
+            bids_dict[price] = deque()
         bids_dict[price].append({'tag':self.__tag, 'volume':volume})
         self.lookup[self.__tag] = bids_dict[price][-1]
         return False
@@ -67,7 +72,7 @@ class OrderBook:
         else:
             if self.__submit_bid(price, volume):
                 return True
-            
+
         self.__tag += 1
         return self.__tag - 1
     
@@ -84,7 +89,7 @@ class OrderBook:
         """Returns lowest ask, or False if empty."""
         asks = self.orders['asks']
         while asks:
-            min_ask = min(asks)
+            min_ask = asks.keys()[0]
             while min_ask in asks:
                 if asks[min_ask][0]['volume'] == 0:
                     self.lookup.pop(asks[min_ask][0]['tag'], None)
@@ -99,7 +104,7 @@ class OrderBook:
         """Returns highest bid, or False if empty."""
         bids = self.orders['bids']
         while bids:
-            max_bid = max(bids)
+            max_bid = bids.keys()[-1]
             while max_bid in bids:
                 if bids[max_bid][0]['volume'] == 0:
                     self.lookup.pop(bids[max_bid][0]['tag'], None)
