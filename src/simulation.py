@@ -16,6 +16,7 @@ class Simulate:
 
         self.book = OrderBook()
         self.record = []
+        self.tags = []
         self.agent = None
         
     def __update_record(self):
@@ -66,18 +67,17 @@ class Simulate:
                 volume = randint(1, 10)
                 offset = uniform(0.5, 5)
                 price = book.get_midprice() - direction * offset
-                book.submit_order(direction, price, volume)
+                self.tags.append(book.submit_order(direction, price, volume))
             # Market order. 
             elif self.cuts[0] < gen <= self.cuts[1]:
                 direction = choice((-1, 1))
                 volume = randint(1, 10)
                 price = book.get_best_price(direction=-direction)
-                book.submit_order(direction, price, volume)
+                self.tags.append(book.submit_order(direction, price, volume))
             # Cancellation. 
             elif self.cuts[1] < gen <= self.cuts[2]:
-                if book._lookup:
-                    key = choice(list(book._lookup.keys()))
-                    book.cancel_order(key)
+                if self.tags:
+                    book.cancel_order(choice(self.tags))
             # No action. 
             else: pass
             self.__update_record()
