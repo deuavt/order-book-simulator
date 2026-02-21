@@ -56,7 +56,7 @@ class Simulate:
 
             book = self.book
 
-            if book.get_midprice() is False:
+            if book.get_midprice() is None:
                 self.__update_record()
                 continue
 
