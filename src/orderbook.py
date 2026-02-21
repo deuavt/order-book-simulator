@@ -7,124 +7,95 @@ class OrderBook:
     """Limit order book with matching engine."""
     def __init__(self):
         self.orders = {'asks':SortedDict(), 'bids':SortedDict()}
-        self.lookup = {}
+        self._lookup = {}
         self.__tag = 0
 
     def __repr__(self):
         return str(self.orders)
-    
-    def __submit_ask(self, price, volume):
-        asks_dict, bids_dict = self.orders['asks'], self.orders['bids']
-        # Matches by walking price levels with price-time priority.
-        while bids_dict and volume > 0:
-            max_bid = bids_dict.keys()[-1]
-            if max_bid < price:
-                break
-            max_bid_order = bids_dict[max_bid][0]
-            fill = min(volume, max_bid_order['volume'])
-            max_bid_order['volume'] -= fill
-            volume -= fill
-            if max_bid_order['volume'] == 0:
-                self.lookup.pop(bids_dict[max_bid][0]['tag'], None)
-                bids_dict[max_bid].popleft()
-                if not bids_dict[max_bid]:
-                    bids_dict.pop(max_bid)
-        if volume == 0:
-            return True
-        if price not in asks_dict:
-            asks_dict[price] = deque()
-        asks_dict[price].append({'tag':self.__tag, 'volume':volume})
-        self.lookup[self.__tag] = asks_dict[price][-1]
-        return False
 
-    def __submit_bid(self, price, volume):
-        asks_dict, bids_dict = self.orders['asks'], self.orders['bids']
-        # Matches by walking price levels with price-time priority.
-        while asks_dict and volume > 0:
-            min_ask = asks_dict.keys()[0]
-            if min_ask > price:
-                break
-            min_ask_order = asks_dict[min_ask][0]
-            fill = min(volume, min_ask_order['volume'])
-            min_ask_order['volume'] -= fill
-            volume -= fill
-            if min_ask_order['volume'] == 0:
-                self.lookup.pop(asks_dict[min_ask][0]['tag'], None)
-                asks_dict[min_ask].popleft()
-                if not asks_dict[min_ask]:
-                    asks_dict.pop(min_ask)
-        if volume == 0:
-            return True
-        if price not in bids_dict:
-            bids_dict[price] = deque()
-        bids_dict[price].append({'tag':self.__tag, 'volume':volume})
-        self.lookup[self.__tag] = bids_dict[price][-1]
-        return False
+    def submit_order(self, direction, price, volume): 
+        """Submit a limit order, and return tag (even if not active)."""
+        if direction not in (-1, 1) or price < 0 or volume <= 0: # direction: -1 = ask, 1 = bid
+            raise ValueError("Invalid order request.")
 
-    def submit_order(self, direction, price, volume):  # direction: -1 = ask, 1 = bid.
-        """Submit a limit order. Returns tag if resting, True if fully filled, False if invalid."""
-        if direction not in (-1, 1) or price < 0 or volume <= 0:
-            return False
-        
-        if direction == -1:
-            if self.__submit_ask(price, volume):
-                return True
-        else:
-            if self.__submit_bid(price, volume):
-                return True
+        own_book = self.orders['asks'] if direction == -1 else self.orders['bids']
+        other_book = self.orders['bids'] if direction == -1 else self.orders['asks']
 
+        # Create new order.
+        order = {'tag': self.__tag, 'volume': volume}
         self.__tag += 1
-        return self.__tag - 1
-    
+
+        # Match by walking price levels with price-time priority.
+        while other_book and order['volume'] > 0:
+            best_other_price = other_book.peekitem(-1)[0] if direction == -1 else other_book.peekitem(0)[0]
+            if (direction == -1 and best_other_price < price) or (direction == 1 and best_other_price > price):
+                break
+
+            best_other_orders = other_book[best_other_price]
+            while best_other_orders and order['volume'] > 0:
+                best_other_order = best_other_orders[0]
+                fill = min(best_other_order['volume'], order['volume'])
+                best_other_order['volume'] -= fill
+                order['volume'] -= fill
+                if best_other_order['volume'] == 0:
+                    best_other_orders.popleft()
+                    self._lookup.pop(best_other_order['tag'], None)
+
+            if not best_other_orders:
+                other_book.pop(best_other_price)
+
+        # Add order to book if not fully filled.
+        if order['volume'] != 0:
+            if price not in own_book:
+                own_book[price] = deque()
+            own_book[price].append(order)
+            self._lookup[order['tag']] = order
+
+        return order['tag']
+
     def cancel_order(self, tag):
-        """Cancel an order by tag (lazy deletion)."""
-        if tag not in self.lookup:
-            return False
-        # Lazy deletion; zero volume orders are cleaned during matching/lookup.
-        self.lookup[tag]['volume'] = 0
-        self.lookup.pop(tag)
-        return True
+        """Cancel an order by tag (lazy deletion); still runs if order does not exist."""
+        order = self._lookup.pop(tag, None)
+        if order is not None:
+            order['volume'] = 0
+
+    def get_best_price(self, direction): # direction: -1 = ask, 1 = bid
+        """Returns best price for the given direction, or None if empty."""
+        orders = self.orders['asks'] if direction == -1 else self.orders['bids']
+        while orders:
+            best_price = orders.peekitem(0)[0] if direction == -1 else orders.peekitem(-1)[0]
+            while orders[best_price]:
+                best_order = orders[best_price][0]
+                if best_order['volume'] != 0:
+                    return best_price
+                self._lookup.pop(best_order['tag'], None)
+                orders[best_price].popleft()
+            orders.pop(best_price)
+        return None
     
     def get_best_ask(self):
-        """Returns lowest ask, or False if empty."""
-        asks = self.orders['asks']
-        while asks:
-            min_ask = asks.keys()[0]
-            while min_ask in asks:
-                if asks[min_ask][0]['volume'] == 0:
-                    self.lookup.pop(asks[min_ask][0]['tag'], None)
-                    asks[min_ask].popleft()
-                    if not asks[min_ask]:
-                        asks.pop(min_ask)
-                else:
-                    return min_ask
-        return False
+        return self.get_best_price(direction=-1)
     
     def get_best_bid(self):
-        """Returns highest bid, or False if empty."""
-        bids = self.orders['bids']
-        while bids:
-            max_bid = bids.keys()[-1]
-            while max_bid in bids:
-                if bids[max_bid][0]['volume'] == 0:
-                    self.lookup.pop(bids[max_bid][0]['tag'], None)
-                    bids[max_bid].popleft()
-                    if not bids[max_bid]:
-                        bids.pop(max_bid)
-                else:
-                    return max_bid
-        return False
+        return self.get_best_price(direction=1)
     
+    def get_volume(self, tag):
+        """Returns volume if order is active, None otherwise."""
+        order = self._lookup.get(tag)
+        if not order or order['volume'] == 0:
+            return None
+        return order['volume']
+
     def get_spread(self):
-        """Returns the bid-ask spread, or False if either side is empty."""
+        """Returns the bid-ask spread, or None if either side is empty."""
         bask, bbid = self.get_best_ask(), self.get_best_bid()
-        if bask is False or bbid is False:
-            return False
+        if bask is None or bbid is None:
+            return None
         return bask - bbid
-    
+
     def get_midprice(self):
-        """Returns midpoint of bid-ask spread, or False if either side is empty."""
+        """Returns midpoint of bid-ask spread, or None if either side is empty."""
         bask, bbid = self.get_best_ask(), self.get_best_bid()
-        if bask is False or bbid is False:
-            return False
+        if bask is None or bbid is None:
+            return None
         return (bask + bbid)/2

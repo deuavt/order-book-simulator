@@ -25,7 +25,7 @@ class MarketMaker:
     def __reserve(self):
         """Return current reservation price."""
         s = self.book.get_midprice()
-        if s is False:
+        if s is None:
             s = self.record[-1]['midprice']
 
         q = self.inventory 
@@ -41,8 +41,9 @@ class MarketMaker:
         book = self.book
         # Update internal values for any bid fills.
         bid_id = self.bid['id']
-        if bid_id in book.lookup:
-            fill = self.bid['volume'] - book.lookup[bid_id]['volume']
+        bid_volume = book.get_volume(bid_id)
+        if bid_volume is not None:
+            fill = self.bid['volume'] - bid_volume
             self.cash -= fill * self.bid['price']
             self.inventory += fill
         elif bid_id is not None:
@@ -50,8 +51,9 @@ class MarketMaker:
             self.inventory += self.bid['volume']
         # Update internal values for any ask fills.
         ask_id = self.ask['id']
-        if ask_id in book.lookup:
-            fill = self.ask['volume'] - book.lookup[ask_id]['volume']
+        ask_volume = book.get_volume(ask_id)
+        if ask_volume is not None:
+            fill = self.ask['volume'] - ask_volume
             self.cash += fill * self.ask['price']
             self.inventory -= fill
         elif ask_id is not None:
@@ -61,7 +63,7 @@ class MarketMaker:
     def __update_records(self):
         time = len(self.record)
         mid = self.book.get_midprice()
-        if mid is False:
+        if mid is None:
             mid = self.record[-1]['midprice']
         pnl = self.cash + self.inventory * mid
         self.pnl_record.append((time, pnl))

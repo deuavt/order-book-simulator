@@ -23,7 +23,7 @@ class Simulate:
         book = self.book
         frame = {'best_bid': book.get_best_bid(), 'best_ask': book.get_best_ask(), 'midprice': book.get_midprice(), 'spread': book.get_spread()}
         for key, value in frame.items():
-            if value is False:
+            if value is None:
                 frame[key] = self.record[-1][key]
         self.record.append(frame)
 
@@ -50,7 +50,7 @@ class Simulate:
     def run(self):
         """Run a full simulation of stochastic order flow alongside a market maker agent (if initialised)."""
         for _ in range(self.steps):
-            if self.agent != None:
+            if self.agent is not None:
                 self.agent.update()
 
             book = self.book
@@ -71,15 +71,12 @@ class Simulate:
             elif self.cuts[0] < gen <= self.cuts[1]:
                 direction = choice((-1, 1))
                 volume = randint(1, 10)
-                if direction == -1:
-                    price = book.get_best_bid()
-                else:
-                    price = book.get_best_ask()
+                price = book.get_best_price(direction=-direction)
                 book.submit_order(direction, price, volume)
             # Cancellation. 
             elif self.cuts[1] < gen <= self.cuts[2]:
-                if book.lookup:
-                    key = choice(list(book.lookup.keys()))
+                if book._lookup:
+                    key = choice(list(book._lookup.keys()))
                     book.cancel_order(key)
             # No action. 
             else: pass
@@ -89,7 +86,7 @@ class Simulate:
         """Return a dictionary of agent cash, inventory, and profit & loss."""
         agent = self.agent
         # Check if agent is initialised.
-        if agent == None:
+        if agent is None:
             return False
 
         return {'cash': agent.cash,
@@ -123,7 +120,7 @@ class Simulate:
         axes[0][1].set_xlabel("Time")
         axes[0][1].set_ylabel("Spread ($)") 
 
-        if self.agent != None:
+        if self.agent is not None:
             # Plot P&L.
             axes[1][0].ticklabel_format(axis='y', style='plain', useOffset=False)
             x, y = zip(*self.agent.pnl_record)
