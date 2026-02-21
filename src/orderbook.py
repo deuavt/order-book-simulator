@@ -52,19 +52,25 @@ class OrderBook:
 
             if not best_other_orders:
                 other_book.pop(best_other_price)
+        
+        if volume > order.volume:
+            if direction == -1:
+                self._update_best_bid()
+            elif direction == 1:
+                self._update_best_ask()
 
         # Add order to book if not fully filled.
         if order.volume != 0:
             if price not in own_book:
                 own_book[price] = deque()
             own_book[price].append(order)
-            self._lookup[order.tag] = order
+            self._lookup[order.tag] = (order, direction, price)
         
-        # Update best_ask or best_bid
-        if direction == -1:
-            self._update_best_ask()
-        elif direction == 1:
-            self._update_best_bid()
+            # Update best_ask or best_bid
+            if direction == -1 and (self.best_ask is None or price < self.best_ask):
+                self.best_ask = price
+            elif direction == 1 and (self.best_bid is None or price > self.best_bid):
+                self.best_bid = price
 
         return order.tag
 
@@ -72,9 +78,12 @@ class OrderBook:
         """Cancel an order by tag (lazy deletion); still runs if order does not exist."""
         order = self._lookup.pop(tag, None)
         if order is not None:
-            order.volume = 0
-        self._update_best_ask()
-        self._update_best_bid()
+            order[0].volume = 0
+            direction = order[1]
+            if direction == -1 and order[2] == self.best_ask:
+                self._update_best_ask()
+            elif direction == 1 and order[2] == self.best_bid:
+                self._update_best_bid()
 
     def _get_best_price(self, direction): # direction: -1 = ask, 1 = bid
         """Returns best price for the given direction, or None if empty."""
@@ -98,9 +107,9 @@ class OrderBook:
     def get_volume(self, tag):
         """Returns volume if order is active, None otherwise."""
         order = self._lookup.get(tag)
-        if not order or order.volume == 0:
+        if not order or order[0].volume == 0:
             return None
-        return order.volume
+        return order[0].volume
 
     def get_spread(self):
         """Returns the bid-ask spread, or None if either side is empty."""

@@ -55,8 +55,9 @@ class Simulate:
                 self.agent.update()
 
             book = self.book
+            midprice = book.get_midprice()
 
-            if book.get_midprice() is None:
+            if midprice is None:
                 self.__update_record()
                 continue
 
@@ -66,7 +67,7 @@ class Simulate:
                 direction = choice((-1, 1))
                 volume = randint(1, 10)
                 offset = uniform(0.5, 5)
-                price = book.get_midprice() - direction * offset
+                price = midprice - direction * offset
                 self.tags.append(book.submit_order(direction, price, volume))
             # Market order. 
             elif self.cuts[0] < gen <= self.cuts[1]:
