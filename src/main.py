@@ -7,7 +7,7 @@ initial_midprice = 100
 initial_orders = 1000
 
 # Simulation config
-steps = 10 ** 6
+steps = 10 ** 5
 limit_p = 0.5
 market_p = 0.2
 cancel_p = 0.1

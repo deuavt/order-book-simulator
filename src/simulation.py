@@ -22,7 +22,7 @@ class Simulate:
     def __update_record(self):
         """Add most recent data to market record."""
         book = self.book
-        frame = {'best_bid': book.get_best_bid(), 'best_ask': book.get_best_ask(), 'midprice': book.get_midprice(), 'spread': book.get_spread()}
+        frame = {'best_bid': book.best_bid, 'best_ask': book.best_ask, 'midprice': book.get_midprice(), 'spread': book.get_spread()}
         for key, value in frame.items():
             if value is None:
                 frame[key] = self.record[-1][key]
@@ -72,7 +72,10 @@ class Simulate:
             elif self.cuts[0] < gen <= self.cuts[1]:
                 direction = choice((-1, 1))
                 volume = randint(1, 10)
-                price = book.get_best_price(direction=-direction)
+                if direction == -1:
+                    price = book.best_bid
+                elif direction == 1:
+                    price = book.best_ask
                 self.tags.append(book.submit_order(direction, price, volume))
             # Cancellation. 
             elif self.cuts[1] < gen <= self.cuts[2]:

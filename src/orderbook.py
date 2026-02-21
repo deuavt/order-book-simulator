@@ -16,6 +16,9 @@ class OrderBook:
         self._lookup = {}
         self.__tag = 0
 
+        self.best_bid = None
+        self.best_ask = None
+
     def __repr__(self):
         return str(self.orders)
 
@@ -56,6 +59,12 @@ class OrderBook:
                 own_book[price] = deque()
             own_book[price].append(order)
             self._lookup[order.tag] = order
+        
+        # Update best_ask or best_bid
+        if direction == -1:
+            self._update_best_ask()
+        elif direction == 1:
+            self._update_best_bid()
 
         return order.tag
 
@@ -64,8 +73,10 @@ class OrderBook:
         order = self._lookup.pop(tag, None)
         if order is not None:
             order.volume = 0
+        self._update_best_ask()
+        self._update_best_bid()
 
-    def get_best_price(self, direction): # direction: -1 = ask, 1 = bid
+    def _get_best_price(self, direction): # direction: -1 = ask, 1 = bid
         """Returns best price for the given direction, or None if empty."""
         orders = self.orders['asks'] if direction == -1 else self.orders['bids']
         while orders:
@@ -79,11 +90,10 @@ class OrderBook:
             orders.pop(best_price)
         return None
     
-    def get_best_ask(self):
-        return self.get_best_price(direction=-1)
-    
-    def get_best_bid(self):
-        return self.get_best_price(direction=1)
+    def _update_best_ask(self):
+        self.best_ask = self._get_best_price(-1)
+    def _update_best_bid(self):
+        self.best_bid = self._get_best_price(1)
     
     def get_volume(self, tag):
         """Returns volume if order is active, None otherwise."""
@@ -94,14 +104,14 @@ class OrderBook:
 
     def get_spread(self):
         """Returns the bid-ask spread, or None if either side is empty."""
-        bask, bbid = self.get_best_ask(), self.get_best_bid()
+        bask, bbid = self.best_ask, self.best_bid
         if bask is None or bbid is None:
             return None
         return bask - bbid
 
     def get_midprice(self):
         """Returns midpoint of bid-ask spread, or None if either side is empty."""
-        bask, bbid = self.get_best_ask(), self.get_best_bid()
+        bask, bbid = self.best_ask, self.best_bid
         if bask is None or bbid is None:
             return None
         return (bask + bbid)/2
