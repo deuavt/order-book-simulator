@@ -1,6 +1,7 @@
 """Run limit order book simulation with market making agent."""
 
 from simulation import Simulate
+from optimiser import Optimise
 
 # Initialisation config.
 initial_midprice = 100
@@ -14,18 +15,26 @@ cancel_p = 0.1
 
 # Agent config; parameter optimisation to be added later.
 half_spread = 0.2
-order_volume = 2
+order_volume = 3
 risk_aversion = 0.05
-var_window_size = 200 # Estimation of market; to be automated later.
+var_window_size = 100
 
-# Run simulation
-sim = Simulate(steps=steps, limit_p=limit_p, market_p=market_p, cancel_p=cancel_p)
+def opt_ex():
+    opt = Optimise(limit_p, market_p, cancel_p, initial_midprice, initial_orders)
+    print(opt.grid_search(n_values=5, n_runs=50, n_steps=2000, raversion_ran=(0.01, 0.1), hspread_ran=(0.1, 0.5), window_size_ran=(50, 100)))
 
-sim.initialise_market(initial_midprice=initial_midprice,  initial_orders=initial_orders)
-sim.initialise_agent(risk_aversion=risk_aversion,  half_spread=half_spread, order_volume=order_volume, var_window_size=var_window_size)
+def sim_ex():
+    sim = Simulate(steps=steps, limit_p=limit_p, market_p=market_p, cancel_p=cancel_p)
 
-sim.run()
+    sim.initialise_market(initial_midprice=initial_midprice,  initial_orders=initial_orders)
+    sim.initialise_agent(risk_aversion=risk_aversion,  half_spread=half_spread, order_volume=order_volume, var_window_size=var_window_size)
 
-# Display results
-print(sim.agent_stats())
-sim.plot_market()
+    sim.run()
+
+    # Display results
+    print(sim.agent_stats())
+    sim.plot_market()
+
+if __name__ == '__main__':
+    opt_ex()
+    #sim_ex()

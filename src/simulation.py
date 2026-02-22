@@ -119,10 +119,9 @@ class Simulate:
         # Plot spread.
         axes[0][1].ticklabel_format(axis='y', style='plain', useOffset=False)
         y = [frame['spread'] for frame in record]
-        # From second point to hide initial jump before agent orders.
-        axes[0][1].plot(x[1:], y[1:])
+        axes[0][1].plot(x, y)
         axes[0][1].set_xlabel("Time")
-        axes[0][1].set_ylabel("Spread ($)") 
+        axes[0][1].set_ylabel("Spread") 
 
         if self.agent is not None:
             # Plot P&L.
