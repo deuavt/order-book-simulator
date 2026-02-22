@@ -21,7 +21,7 @@ risk_aversion = 0.07064
 var_window_size = 89
 
 def sim_ex():
-    sim = Simulate(steps=steps, limit_p=limit_p, market_p=market_p, cancel_p=cancel_p)
+    sim = Simulate(steps=steps, limit_p=limit_p, market_p=market_p, cancel_p=cancel_p, volume_ran=(1, 10), offset_ran=(0.5, 5))
 
     sim.initialise_market(initial_midprice=initial_midprice,  initial_orders=initial_orders)
     sim.initialise_agent(risk_aversion=risk_aversion,  half_spread=half_spread, order_volume=order_volume, var_window_size=var_window_size)
