@@ -13,15 +13,16 @@ limit_p = 0.5
 market_p = 0.2
 cancel_p = 0.1
 
-# Agent config; parameter optimisation to be added later.
-half_spread = 0.2
+# Agent config
 order_volume = 3
-risk_aversion = 0.05
-var_window_size = 100
+# Optimised using optimiser grid_search with previous parameters.
+half_spread = 0.115
+risk_aversion = 0.06
+var_window_size = 97
 
 def opt_ex():
     opt = Optimise(limit_p, market_p, cancel_p, initial_midprice, initial_orders)
-    print(opt.grid_search(n_values=5, n_runs=50, n_steps=2000, raversion_ran=(0.01, 0.1), hspread_ran=(0.1, 0.5), window_size_ran=(50, 100)))
+    print(opt.grid_search(n_values=5, n_runs=30, n_steps=7500, raversion_ran=(0, 0.1), hspread_ran=(0.1, 0.2), window_size_ran=(50, 100)))
 
 def sim_ex():
     sim = Simulate(steps=steps, limit_p=limit_p, market_p=market_p, cancel_p=cancel_p)
@@ -36,5 +37,5 @@ def sim_ex():
     sim.plot_market()
 
 if __name__ == '__main__':
-    opt_ex()
-    #sim_ex()
+    #opt_ex() # Example usage of optimisation.
+    sim_ex() # Example usage of simulation.
