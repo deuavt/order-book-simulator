@@ -2,15 +2,15 @@
 
 class MarketMaker:
     """Avellaneda-Stoikov market maker agent."""
-    def __init__(self, book, record, steps, risk_aversion, variance, half_spread, order_volume):
+    def __init__(self, book, record, steps, risk_aversion, half_spread, order_volume, var_window_size):
         self.book = book
         self.record = record
         self.steps = steps
         
         self.risk_aversion = risk_aversion
-        self.variance = variance
         self.half_spread = half_spread
         self.volume = order_volume
+        self.var_window_size = var_window_size
         
         # Last updated bid/ask ids and values.
         self.bid = {'id': None, 'volume': None, 'price': None}
@@ -19,6 +19,7 @@ class MarketMaker:
         # Internal tracking values.
         self.inventory = 0
         self.cash = 0
+        self.mid_record = []
         self.pnl_record = []
         self.inv_record = []
     
@@ -68,8 +69,28 @@ class MarketMaker:
         pnl = self.cash + self.inventory * mid
         self.pnl_record.append((time, pnl))
         self.inv_record.append((time, self.inventory))
+        self.mid_record.append((time, mid))
+    
+    def __update_variance(self):
+        window_size = self.var_window_size
+        if len(self.mid_record) >= window_size:
+            window = self.mid_record[-window_size:]
+            mean_sum = 0
+            for x in window:
+                mean_sum += x[1]
+            mean = mean_sum / window_size
+
+            variance_sum = 0
+            for x in window:
+                variance_sum += (mean - x[1])**2
+            self.variance = variance_sum / window_size
+        else:
+            self.variance = None
 
     def __update_orders(self):
+        if self.variance is None:
+            return
+
         book = self.book
         # Cancel active orders.
         book.cancel_order(self.bid['id'])
@@ -86,7 +107,8 @@ class MarketMaker:
         self.ask = {'id': ask_id, 'volume': self.volume, 'price': ask_price}
 
     def update(self):
-        """Update agent values, records, and bid/ask orders based on current reservation price."""
+        """Update agent values, records, rolling variance, and bid/ask orders based on current reservation price."""
         self.__update_values()
         self.__update_records()
+        self.__update_variance()
         self.__update_orders()

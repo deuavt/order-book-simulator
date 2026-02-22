@@ -38,15 +38,15 @@ class Simulate:
             self.book.submit_order(direction, price, volume)
         self.__update_record()
 
-    def initialise_agent(self, risk_aversion, variance, half_spread, order_volume):
+    def initialise_agent(self, risk_aversion, half_spread, order_volume, var_window_size):
         """Initialise Avellaneda-Stoikov market maker agent."""
         self.agent = MarketMaker(book=self.book, 
                                  record=self.record, 
                                  steps=self.steps, 
                                  risk_aversion=risk_aversion, 
-                                 variance=variance, 
                                  half_spread=half_spread, 
-                                 order_volume=order_volume)
+                                 order_volume=order_volume,
+                                 var_window_size=var_window_size)
         
     def run(self):
         """Run a full simulation of stochastic order flow alongside a market maker agent (if initialised)."""
