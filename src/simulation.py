@@ -23,7 +23,7 @@ class Simulation:
 
         self.book = OrderBook()
         self.record = []
-        # Todo: Add functionality to remove filled tags from self.tags.
+
         self.tags = []
         self.agent = None
 
