@@ -19,9 +19,9 @@ step_std = 0.5
 # Agent config.
 order_volume = 3
 # Parameters optimised using Bayesian search.
-half_spread = 0.1092
-risk_aversion = 0.07064
-var_window_size = 89
+half_spread = 0.12076
+risk_aversion = 0.08747
+var_window_size = 87
 
 # Gridsearch config.
 g_n_values = 5
