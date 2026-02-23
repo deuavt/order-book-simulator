@@ -1,46 +1,105 @@
 """Example usages of limit order book simulation with market making agent, as well as the parameter optimisers."""
 
-from simulation import Simulate
-from optimiser import Optimise
+from simulation import Simulation
+from optimiser import Optimiser
 
-# Initialisation config.
+# Simulation config.
 initial_midprice = 100
 initial_orders = 1000
 
-# Simulation config.
 steps = 10 ** 4
-limit_p = 0.5
-market_p = 0.2
-cancel_p = 0.1
+limit_probability = 0.5
+market_probability = 0.2
+cancel_probability = 0.1
+volume_range = (1, 10)
+offset_range = (0.5, 5)
 
 # Agent config.
 order_volume = 3
-# Optimised using optimiser bayesian_search with previous parameters.
+# Parameters optimised using Bayesian search.
 half_spread = 0.1092
 risk_aversion = 0.07064
 var_window_size = 89
 
-def sim_ex():
-    sim = Simulate(steps=steps, limit_p=limit_p, market_p=market_p, cancel_p=cancel_p, volume_ran=(1, 10), offset_ran=(0.5, 5))
+# Gridsearch config.
+g_n_values = 5
+g_n_runs = 5
+g_n_steps = 2000
+g_risk_aversion_ran = (0, 0.1)
+g_half_spread_ran = (0.1, 0.2)
+g_window_size_range = (50, 100)
 
-    sim.initialise_market(initial_midprice=initial_midprice,  initial_orders=initial_orders)
-    sim.initialise_agent(risk_aversion=risk_aversion,  half_spread=half_spread, order_volume=order_volume, var_window_size=var_window_size)
+# Bayesian search config.
+b_n_trials = 50
+b_n_runs = 5
+b_n_steps = 2000
+b_risk_aversion_ran = (0, 0.1)
+b_half_spread_ran = (0.1, 0.2)
+b_window_size_range = (50, 100)
+
+def sim_ex():
+    """Example usage of the Simulation class."""
+    sim = Simulation(steps=steps, 
+                     limit_p=limit_probability, 
+                     market_p=market_probability, 
+                     cancel_p=cancel_probability, 
+                     volume_ran=volume_range, 
+                     offset_ran=offset_range)
+
+    sim.initialise_market(initial_midprice=initial_midprice,  
+                          initial_orders=initial_orders)
+
+    sim.initialise_agent(risk_aversion=risk_aversion,  
+                         half_spread=half_spread, 
+                         order_volume=order_volume, 
+                         var_window_size=var_window_size)
 
     sim.run()
 
-    # Display results.
-    print(sim.agent_stats())
+    # Display simulation results.
+    agent_stats = sim.agent_stats()
+    print(agent_stats)
     sim.plot_market()
 
 def grid_ex():
-    opt = Optimise(limit_p, market_p, cancel_p, initial_midprice, initial_orders, volume_ran=(1, 10), offset_ran=(0.5, 5))
-    print(opt.grid_search(n_values=5, n_runs=10, n_steps=5000, raversion_ran=(0, 0.1), hspread_ran=(0.1, 0.2), window_size_ran=(50, 100)))
+    """Example usage of the Optimiser class with grid search."""
+    opt = Optimiser(limit_p = limit_probability, 
+                    market_p = market_probability, 
+                    cancel_p = cancel_probability, 
+                    initial_midprice = initial_midprice, 
+                    initial_orders = initial_orders, 
+                    volume_ran = volume_range, 
+                    offset_ran = offset_range)
+
+    grid = opt.grid_search(n_values=g_n_values, 
+                           n_runs=g_n_runs, 
+                           n_steps=g_n_steps, 
+                           raversion_ran=g_risk_aversion_ran, 
+                           hspread_ran=g_half_spread_ran, 
+                           window_size_ran=g_window_size_range)
+    print(grid)
 
 def bay_ex():
-    opt = Optimise(limit_p, market_p, cancel_p, initial_midprice, initial_orders, volume_ran=(1, 10), offset_ran=(0.5, 5))
-    print(opt.bayesian_search(n_trials=50, n_runs=5, n_steps=5000, raversion_ran=(0, 0.1), hspread_ran=(0.1, 0.2), window_size_ran=(50, 100)))
+    """Example usage of the Optimiser class with Baysian search."""
+    opt = Optimiser(limit_p = limit_probability, 
+                    market_p = market_probability, 
+                    cancel_p = cancel_probability, 
+                    initial_midprice = initial_midprice, 
+                    initial_orders = initial_orders,
+                    volume_ran = volume_range, 
+                    offset_ran = offset_range)
+
+    bay = opt.bayesian_search(n_trials=b_n_trials, 
+                              n_runs=b_n_runs, 
+                              n_steps=b_n_steps, 
+                              raversion_ran=b_risk_aversion_ran, 
+                              hspread_ran=b_half_spread_ran, 
+                              window_size_ran=b_window_size_range)
+
+    print(bay)
 
 if __name__ == '__main__':
-    sim_ex() # Example usage of simulation.
-    #grid_ex() # Example usage of grid optimisation.
-    #bay_ex() # Example usage of bayesian optimisation.
+    sim_ex() # Example of simulation.
+    #grid_ex() # Example of grid optimisation.
+    #bay_ex() # Example of bayesian optimisation.
+    pass

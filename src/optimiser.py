@@ -1,6 +1,6 @@
 """Parameter optimiser for market making agent."""
 
-from simulation import Simulate
+from simulation import Simulation
 from concurrent.futures import ProcessPoolExecutor
 from itertools import product
 from numpy import linspace
@@ -10,7 +10,7 @@ def _test_parameters(raversion, hspread, window_size, n_runs, n_steps, limit_p, 
     """Run market simulations to estimate the mean sharpe ratio for given parameters."""
     sharpe_mean_sum = 0
     for _ in range(n_runs):
-        sim = Simulate(n_steps, limit_p, market_p, cancel_p, volume_ran=volume_ran, offset_ran=offset_ran)
+        sim = Simulation(n_steps, limit_p, market_p, cancel_p, volume_ran=volume_ran, offset_ran=offset_ran)
         sim.initialise_market(initial_midprice=initial_midprice, initial_orders=initial_orders)
         sim.initialise_agent(risk_aversion=raversion, half_spread=hspread, order_volume=3, var_window_size=window_size)
         sim.run()
@@ -20,7 +20,7 @@ def _test_parameters(raversion, hspread, window_size, n_runs, n_steps, limit_p, 
 
         mean = sum(pnl_changes) / len(pnl_changes)
         variance = sum((change - mean)**2 for change in pnl_changes) / len(pnl_changes)
-        sharpe_mean_sum += mean / (variance ** 0.5) if variance != 0 else float('inf')
+        sharpe_mean_sum += mean / (variance ** 0.5) if variance != 0 else 0
 
     sharpe_mean = sharpe_mean_sum / n_runs
     return (sharpe_mean, raversion, hspread, window_size)
@@ -30,7 +30,7 @@ def _grid_trial(args):
         """Stage a trial for grid search optimisation."""
         return _test_parameters(*args)
 
-class Optimise:
+class Optimiser:
     def __init__(self, limit_p, market_p, cancel_p, initial_midprice, initial_orders, volume_ran, offset_ran):
         self.limit_p = limit_p
         self.market_p = market_p

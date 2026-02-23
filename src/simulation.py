@@ -6,7 +6,7 @@ from random import random, uniform, randint, choice
 import matplotlib.pyplot as plt
 from itertools import accumulate
 
-class Simulate:
+class Simulation:
     def __init__(self, steps, limit_p, market_p, cancel_p, volume_ran, offset_ran):
         self.steps = steps
         self.limit_p = limit_p
