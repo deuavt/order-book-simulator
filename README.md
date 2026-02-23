@@ -11,5 +11,5 @@ Simulated limit order book with stochastic order flow, and an Avellaneda-Stoikov
 * \[x] Performance optimisation
 * \[x] Rolling variance estimation
 * \[x] Parameter optimisation
+* \[x] Informed traders & adverse selection
 * \[ ] Animated visualisation
-* \[ ] Informed traders & adverse selection

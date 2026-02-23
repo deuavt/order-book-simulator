@@ -11,8 +11,10 @@ steps = 10 ** 4
 limit_probability = 0.5
 market_probability = 0.2
 cancel_probability = 0.1
+informed_probability = 0.2
 volume_range = (1, 10)
 offset_range = (0.5, 5)
+step_std = 0.5
 
 # Agent config.
 order_volume = 3
@@ -43,8 +45,10 @@ def sim_ex():
                      limit_p=limit_probability, 
                      market_p=market_probability, 
                      cancel_p=cancel_probability, 
+                     informed_p=informed_probability,
                      volume_ran=volume_range, 
-                     offset_ran=offset_range)
+                     offset_ran=offset_range,
+                     step_std=step_std)
 
     sim.initialise_market(initial_midprice=initial_midprice,  
                           initial_orders=initial_orders)
@@ -66,17 +70,19 @@ def grid_ex():
     opt = Optimiser(limit_p = limit_probability, 
                     market_p = market_probability, 
                     cancel_p = cancel_probability, 
+                    informed_p = informed_probability,
                     initial_midprice = initial_midprice, 
                     initial_orders = initial_orders, 
                     volume_ran = volume_range, 
-                    offset_ran = offset_range)
+                    offset_ran = offset_range,
+                    step_std = step_std)
 
-    grid = opt.grid_search(n_values=g_n_values, 
-                           n_runs=g_n_runs, 
-                           n_steps=g_n_steps, 
-                           raversion_ran=g_risk_aversion_ran, 
-                           hspread_ran=g_half_spread_ran, 
-                           window_size_ran=g_window_size_range)
+    grid = opt.grid_search(n_values = g_n_values, 
+                           n_runs = g_n_runs, 
+                           n_steps = g_n_steps, 
+                           raversion_ran = g_risk_aversion_ran, 
+                           hspread_ran = g_half_spread_ran, 
+                           window_size_ran = g_window_size_range)
     print(grid)
 
 def bay_ex():
@@ -84,17 +90,19 @@ def bay_ex():
     opt = Optimiser(limit_p = limit_probability, 
                     market_p = market_probability, 
                     cancel_p = cancel_probability, 
+                    informed_p = informed_probability,
                     initial_midprice = initial_midprice, 
                     initial_orders = initial_orders,
                     volume_ran = volume_range, 
-                    offset_ran = offset_range)
+                    offset_ran = offset_range,
+                    step_std = step_std)
 
-    bay = opt.bayesian_search(n_trials=b_n_trials, 
-                              n_runs=b_n_runs, 
-                              n_steps=b_n_steps, 
-                              raversion_ran=b_risk_aversion_ran, 
-                              hspread_ran=b_half_spread_ran, 
-                              window_size_ran=b_window_size_range)
+    bay = opt.bayesian_search(n_trials = b_n_trials, 
+                              n_runs = b_n_runs, 
+                              n_steps = b_n_steps, 
+                              raversion_ran = b_risk_aversion_ran, 
+                              hspread_ran = b_half_spread_ran, 
+                              window_size_ran = b_window_size_range)
 
     print(bay)
 

@@ -6,11 +6,11 @@ from itertools import product
 from numpy import linspace
 import optuna
 
-def _test_parameters(raversion, hspread, window_size, n_runs, n_steps, limit_p, market_p, cancel_p, initial_midprice, initial_orders, volume_ran, offset_ran):
+def _test_parameters(raversion, hspread, window_size, n_runs, n_steps, limit_p, market_p, cancel_p, informed_p, initial_midprice, initial_orders, volume_ran, offset_ran, step_std):
     """Run market simulations to estimate the mean sharpe ratio for given parameters."""
     sharpe_mean_sum = 0
     for _ in range(n_runs):
-        sim = Simulation(n_steps, limit_p, market_p, cancel_p, volume_ran=volume_ran, offset_ran=offset_ran)
+        sim = Simulation(n_steps, limit_p, market_p, cancel_p, informed_p, volume_ran=volume_ran, offset_ran=offset_ran, step_std=step_std)
         sim.initialise_market(initial_midprice=initial_midprice, initial_orders=initial_orders)
         sim.initialise_agent(risk_aversion=raversion, half_spread=hspread, order_volume=3, var_window_size=window_size)
         sim.run()
@@ -31,14 +31,16 @@ def _grid_trial(args):
         return _test_parameters(*args)
 
 class Optimiser:
-    def __init__(self, limit_p, market_p, cancel_p, initial_midprice, initial_orders, volume_ran, offset_ran):
+    def __init__(self, limit_p, market_p, cancel_p, informed_p, initial_midprice, initial_orders, volume_ran, offset_ran, step_std):
         self.limit_p = limit_p
         self.market_p = market_p
         self.cancel_p = cancel_p
+        self.informed_p = informed_p
         self.initial_midprice = initial_midprice
         self.initial_orders = initial_orders
         self.volume_ran = volume_ran
         self.offset_ran = offset_ran
+        self.step_std = step_std
 
     def grid_search(self, n_values, n_runs, n_steps, raversion_ran, hspread_ran, window_size_ran):
         """Run a grid search parameter optimiser."""
@@ -55,7 +57,7 @@ class Optimiser:
         futures = []
         with ProcessPoolExecutor() as executor:
             for raversion, hspread, window_size in product(raversion_vals, hspread_vals, window_size_vals):
-                args = (raversion, hspread, window_size, n_runs, n_steps, self.limit_p, self.market_p, self.cancel_p, self.initial_midprice, self.initial_orders, self.volume_ran, self.offset_ran)
+                args = (raversion, hspread, window_size, n_runs, n_steps, self.limit_p, self.market_p, self.cancel_p, self.informed_p, self.initial_midprice, self.initial_orders, self.volume_ran, self.offset_ran, self.step_std)
                 future = executor.submit(_grid_trial, args)
                 future.add_done_callback(update_progress)
                 futures.append(future)
@@ -74,7 +76,7 @@ class Optimiser:
         hspread = trial.suggest_float('hspread', hspread_ran[0], hspread_ran[1])
         window_size = trial.suggest_int('window_size', window_size_ran[0], window_size_ran[1])
 
-        return _test_parameters(raversion, hspread, window_size, n_runs, n_steps, self.limit_p, self.market_p, self.cancel_p, self.initial_midprice, self.initial_orders, self.volume_ran, self.offset_ran)[0]
+        return _test_parameters(raversion, hspread, window_size, n_runs, n_steps, self.limit_p, self.market_p, self.cancel_p, self.informed_p, self.initial_midprice, self.initial_orders, self.volume_ran, self.offset_ran, self.step_std)[0]
 
     def bayesian_search(self, n_trials, n_runs, n_steps, raversion_ran, hspread_ran, window_size_ran):
         """Run a Bayesian search parameter optimiser."""

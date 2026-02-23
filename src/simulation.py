@@ -2,18 +2,22 @@
 
 from marketmaker import MarketMaker
 from orderbook import OrderBook
-from random import random, uniform, randint, choice
+from random import random, uniform, randint, choice, gauss
 import matplotlib.pyplot as plt
 from itertools import accumulate
 
 class Simulation:
-    def __init__(self, steps, limit_p, market_p, cancel_p, volume_ran, offset_ran):
+    def __init__(self, steps, limit_p, market_p, cancel_p, informed_p, volume_ran, offset_ran, step_std):
         self.steps = steps
         self.limit_p = limit_p
         self.market_p = market_p
         self.cancel_p = cancel_p
         self.volume_ran = volume_ran
         self.offset_ran = offset_ran
+        self.step_std = step_std
+        self.informed_p = informed_p
+
+        self.__true_price = None
 
         self.cuts = list(accumulate([limit_p, market_p, cancel_p]))
 
@@ -23,22 +27,35 @@ class Simulation:
         self.tags = []
         self.agent = None
 
-    def __limit_order(self, fixed_midprice=None):
+    def __limit_order(self, initialisation=False):
         """Create a random limit order."""
         direction = choice((-1, 1))
         volume = randint(self.volume_ran[0], self.volume_ran[1])
         offset = uniform(self.offset_ran[0], self.offset_ran[1])
-        midprice = self.book.get_midprice() if fixed_midprice is None else fixed_midprice
+        midprice = self.__true_price if initialisation else self.book.get_midprice()
         price = midprice - direction * offset
         self.tags.append(self.book.submit_order(direction, price, volume))
 
     def __market_order(self):
         """Create a random market order."""
-        direction, volume = choice((-1, 1)), randint(1, 10)
+        if random() < self.informed_p:
+            # Informed trader.
+            if self.__true_price > self.book.best_ask:
+                direction = 1
+            elif self.__true_price < self.book.best_bid:
+                direction = -1
+            else:
+                return
+        else:
+            # Uninformed trader.
+            direction = choice((-1, 1))
+
+        volume = randint(1, 10)
         if direction == -1:
             price = self.book.best_bid
         else:
             price = self.book.best_ask
+
         self.tags.append(self.book.submit_order(direction, price, volume))
 
     def __cancel_order(self):
@@ -67,10 +84,16 @@ class Simulation:
                 else: return
         record.append(frame)
 
+    def __move_true_price(self):
+        """Update the true price following a random walk."""
+        movement = gauss(0, self.step_std)
+        self.__true_price += movement
+
     def initialise_market(self, initial_midprice, initial_orders):
         """Create initial orders before order flow."""
+        self.__true_price = initial_midprice
         for _ in range(initial_orders):
-            self.__limit_order(fixed_midprice=initial_midprice)
+            self.__limit_order(initialisation=True)
         self.__update_record()
 
     def initialise_agent(self, risk_aversion, half_spread, order_volume, var_window_size):
@@ -92,7 +115,6 @@ class Simulation:
 
         for _ in range(self.steps):
             self.agent.update()
-
             if self.book.get_midprice() is not None:
                 gen = random()
                 if gen <= self.cuts[0]:
@@ -102,6 +124,7 @@ class Simulation:
                 elif self.cuts[1] < gen <= self.cuts[2]:
                     self.__cancel_order()
             self.__update_record()
+            self.__move_true_price()
 
     def agent_stats(self):
         """Return a dictionary of agent cash, inventory, and profit & loss."""
