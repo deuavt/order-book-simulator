@@ -66,7 +66,8 @@ class MarketMaker:
         if len(self.mid_record) >= window_size:
             window = self.mid_record[-window_size:]
             mean = sum(mid[1] for mid in window) / window_size
-            self.variance = sum((mean - mid[1])**2 for mid in window) / window_size
+            # Uses window_size - 1 following Bessel's correction.
+            self.variance = sum((mean - mid[1])**2 for mid in window) / (window_size - 1)
         else:
             self.variance = None
 

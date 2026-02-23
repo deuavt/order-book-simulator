@@ -40,9 +40,9 @@ class Simulation:
         """Create a random market order."""
         if random() < self.informed_p:
             # Informed trader.
-            if self.__true_price > self.book.best_ask:
+            if self.book.best_ask is not None and self.__true_price > self.book.best_ask:
                 direction = 1
-            elif self.__true_price < self.book.best_bid:
+            elif self.book.best_bid is not None and self.__true_price < self.book.best_bid:
                 direction = -1
             else:
                 return
