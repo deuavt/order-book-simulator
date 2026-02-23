@@ -72,19 +72,19 @@ class Optimiser:
                 'var_window_size': int(max_sharpe[3])}
 
     def __bay_trial(self, trial, n_runs, n_steps, raversion_ran, hspread_ran, window_size_ran):
-        """Stage a trial for Bayesian search optimisation."""
+        """Stage a trial for Bayesian optimisation."""
         raversion = trial.suggest_float('raversion', raversion_ran[0], raversion_ran[1])
         hspread = trial.suggest_float('hspread', hspread_ran[0], hspread_ran[1])
         window_size = trial.suggest_int('window_size', window_size_ran[0], window_size_ran[1])
 
         return _test_parameters(raversion, hspread, window_size, self.agent_volume, n_runs, n_steps, self.limit_p, self.market_p, self.cancel_p, self.informed_p, self.initial_midprice, self.initial_orders, self.volume_ran, self.offset_ran, self.step_std)[0]
 
-    def bayesian_search(self, n_trials, n_runs, n_steps, raversion_ran, hspread_ran, window_size_ran):
-        """Run a Bayesian search parameter optimiser."""
+    def bayesian(self, n_trials, n_runs, n_steps, raversion_ran, hspread_ran, window_size_ran):
+        """Run a Bayesian parameter optimiser."""
         objective = lambda trial: self.__bay_trial(trial, n_runs, n_steps, raversion_ran, hspread_ran, window_size_ran)
 
         def update_progress(study, trial):
-            print(f"Bayesian Search Progress: {round(100 * len(study.trials) / n_trials, 2)}%", end="    \r")
+            print(f"Bayesian Optimisation Progress: {round(100 * len(study.trials) / n_trials, 2)}%", end="    \r")
 
         optuna.logging.set_verbosity(optuna.logging.WARNING)
         study = optuna.create_study(direction='maximize')

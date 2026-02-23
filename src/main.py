@@ -18,7 +18,7 @@ step_std = 0.5
 
 # Agent config.
 order_volume = 3
-# Parameters optimised using Bayesian search.
+# Parameters optimised using Bayesian optimisation.
 half_spread = 0.12076
 risk_aversion = 0.08747
 var_window_size = 87
@@ -31,7 +31,7 @@ g_risk_aversion_ran = (0, 0.1)
 g_half_spread_ran = (0.1, 0.2)
 g_window_size_range = (50, 100)
 
-# Bayesian search config.
+# Bayesian optimisation config.
 b_n_trials = 50
 b_n_runs = 5
 b_n_steps = 2000
@@ -88,7 +88,7 @@ def grid_ex():
     print({i: round(v, 5) for i, v in grid.items()})
 
 def bay_ex():
-    """Example usage of the Optimiser class with Baysian search."""
+    """Example usage of the Optimiser class with Bayesian optimisation."""
     opt = Optimiser(limit_p = limit_probability, 
                     market_p = market_probability, 
                     cancel_p = cancel_probability, 
@@ -100,7 +100,7 @@ def bay_ex():
                     step_std = step_std,
                     agent_volume = order_volume)
 
-    bay = opt.bayesian_search(n_trials = b_n_trials, 
+    bay = opt.bayesian(n_trials = b_n_trials, 
                               n_runs = b_n_runs, 
                               n_steps = b_n_steps, 
                               raversion_ran = b_risk_aversion_ran, 
@@ -110,7 +110,7 @@ def bay_ex():
     print({i: round(v, 5) for i, v in bay.items()})
 
 if __name__ == '__main__':
-    program_type = input("Enter Program Type (S = Simulation, G = Grid Search, B = Bayesian Search):\n").lower()
+    program_type = input("Enter Program Type (S = Simulation, G = Grid Search, B = Bayesian Optimisation):\n").lower()
     match program_type:
         case "s": sim_ex()
         case "g": grid_ex()
