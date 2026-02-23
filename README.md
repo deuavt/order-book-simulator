@@ -4,7 +4,7 @@ A limit order book engine and market making simulation in Python.
 
 ## Summary
 
-Simulates a limit order book with stochastic order flow, informed traders, and an Avellaneda-Stoikov market making agent which manages inventory risk with reservation price adjustment. Includes grid search and Bayesian parameter optimisation.
+Simulates a limit order book with stochastic order flow, informed traders, and an Avellaneda-Stoikov market making agent that manages inventory risk via reservation price adjustment. Includes grid search and Bayesian parameter optimisation.
 
 ![Simulation Results](simulation.png)
 
@@ -17,6 +17,8 @@ Simulates a limit order book with stochastic order flow, informed traders, and a
 - **Parameter optimisation**: parallelised grid search and Bayesian optimisation using Optuna
 
 ## Installation 
+
+Requires **Python 3.10+**.
 
 ```bash
 pip install -r requirements.txt
