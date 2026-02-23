@@ -110,8 +110,8 @@ def bay_ex():
     print({i: round(v, 5) for i, v in bay.items()})
 
 if __name__ == '__main__':
-    type = input("Enter Program Type (S = Simulation, G = Grid Search, B = Bayesian Search):\n").lower()
-    match type:
+    program_type = input("Enter Program Type (S = Simulation, G = Grid Search, B = Bayesian Search):\n").lower()
+    match program_type:
         case "s": sim_ex()
         case "g": grid_ex()
         case "b": bay_ex()
