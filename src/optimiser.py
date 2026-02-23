@@ -48,7 +48,7 @@ class Optimiser:
         def update_progress(f):
             nonlocal trial_count
             trial_count += 1
-            print(f"Grid Search Progress: {round(100 * trial_count / n_values**3, 2)}%", end="\r")
+            print(f"Grid Search Progress: {round(100 * trial_count / n_values**3, 2)}%", end="    \r")
 
         raversion_vals = linspace(raversion_ran[0], raversion_ran[1], num=n_values)
         hspread_vals = linspace(hspread_ran[0], hspread_ran[1], num=n_values)
@@ -83,7 +83,7 @@ class Optimiser:
         objective = lambda trial: self.__bay_trial(trial, n_runs, n_steps, raversion_ran, hspread_ran, window_size_ran)
 
         def update_progress(study, trial):
-            print(f"Bayesian Search Progress: {round(100 * len(study.trials) / n_trials, 2)}%", end="\r")
+            print(f"Bayesian Search Progress: {round(100 * len(study.trials) / n_trials, 2)}%", end="    \r")
 
         optuna.logging.set_verbosity(optuna.logging.WARNING)
         study = optuna.create_study(direction='maximize')
