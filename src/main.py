@@ -75,7 +75,8 @@ def grid_ex():
                     initial_orders = initial_orders, 
                     volume_ran = volume_range, 
                     offset_ran = offset_range,
-                    step_std = step_std)
+                    step_std = step_std,
+                    agent_volume = order_volume)
 
     grid = opt.grid_search(n_values = g_n_values, 
                            n_runs = g_n_runs, 
@@ -96,7 +97,8 @@ def bay_ex():
                     initial_orders = initial_orders,
                     volume_ran = volume_range, 
                     offset_ran = offset_range,
-                    step_std = step_std)
+                    step_std = step_std,
+                    agent_volume = order_volume)
 
     bay = opt.bayesian_search(n_trials = b_n_trials, 
                               n_runs = b_n_runs, 
