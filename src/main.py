@@ -33,11 +33,11 @@ def sim_ex():
     sim.plot_market()
 
 def grid_ex():
-    opt = Optimise(limit_p, market_p, cancel_p, initial_midprice, initial_orders)
+    opt = Optimise(limit_p, market_p, cancel_p, initial_midprice, initial_orders, volume_ran=(1, 10), offset_ran=(0.5, 5))
     print(opt.grid_search(n_values=5, n_runs=10, n_steps=5000, raversion_ran=(0, 0.1), hspread_ran=(0.1, 0.2), window_size_ran=(50, 100)))
 
 def bay_ex():
-    opt = Optimise(limit_p, market_p, cancel_p, initial_midprice, initial_orders)
+    opt = Optimise(limit_p, market_p, cancel_p, initial_midprice, initial_orders, volume_ran=(1, 10), offset_ran=(0.5, 5))
     print(opt.bayesian_search(n_trials=50, n_runs=5, n_steps=5000, raversion_ran=(0, 0.1), hspread_ran=(0.1, 0.2), window_size_ran=(50, 100)))
 
 if __name__ == '__main__':

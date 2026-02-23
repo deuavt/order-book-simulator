@@ -24,7 +24,7 @@ class OrderBook:
 
     def submit_order(self, direction, price, volume): 
         """Submit a limit order, and return tag (even if not active)."""
-        if direction not in (-1, 1) or price < 0 or volume <= 0: # direction: -1 = ask, 1 = bid
+        if direction not in (-1, 1) or price < 0 or volume <= 0:
             raise ValueError("Invalid order request.")
 
         own_book = self.orders['asks'] if direction == -1 else self.orders['bids']
@@ -66,7 +66,6 @@ class OrderBook:
             own_book[price].append(order)
             self._lookup[order.tag] = (order, direction, price)
         
-            # Update best_ask or best_bid
             if direction == -1 and (self.best_ask is None or price < self.best_ask):
                 self.best_ask = price
             elif direction == 1 and (self.best_bid is None or price > self.best_bid):
@@ -85,7 +84,7 @@ class OrderBook:
             elif direction == 1 and order[2] == self.best_bid:
                 self._update_best_bid()
 
-    def _get_best_price(self, direction): # direction: -1 = ask, 1 = bid
+    def _get_best_price(self, direction):
         """Returns best price for the given direction, or None if empty."""
         orders = self.orders['asks'] if direction == -1 else self.orders['bids']
         while orders:
