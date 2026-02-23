@@ -65,10 +65,10 @@ class Optimiser:
         max_sharpe = max(results, key=lambda x: x[0])
 
         print(' ' * 40, end='\r')
-        return {'sharpe': max_sharpe[0], 
-                'risk_aversion': max_sharpe[1], 
-                'half_spread': max_sharpe[2], 
-                'var_window_size': max_sharpe[3]}
+        return {'sharpe': float(max_sharpe[0]), 
+                'risk_aversion': float(max_sharpe[1]), 
+                'half_spread': float(max_sharpe[2]), 
+                'var_window_size': int(max_sharpe[3])}
 
     def __bay_trial(self, trial, n_runs, n_steps, raversion_ran, hspread_ran, window_size_ran):
         """Stage a trial for Bayesian search optimisation."""
@@ -91,7 +91,7 @@ class Optimiser:
 
         print(' ' * 40, end='\r')
         best = study.best_trial
-        return {'sharpe': best.value, 
-                'risk_aversion': best.params['raversion'], 
-                'half_spread': best.params['hspread'], 
-                'var_window_size': best.params['window_size']}
+        return {'sharpe': float(best.value), 
+                'risk_aversion': float(best.params['raversion']), 
+                'half_spread': float(best.params['hspread']), 
+                'var_window_size': int(best.params['window_size'])}

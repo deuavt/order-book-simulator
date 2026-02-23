@@ -7,11 +7,11 @@ from optimiser import Optimiser
 initial_midprice = 100
 initial_orders = 1000
 
-steps = 10 ** 4
+steps = 10 ** 5
 limit_probability = 0.5
 market_probability = 0.2
 cancel_probability = 0.1
-informed_probability = 0.2
+informed_probability = 0.1
 volume_range = (1, 10)
 offset_range = (0.5, 5)
 step_std = 0.5
@@ -62,7 +62,7 @@ def sim_ex():
 
     # Display simulation results.
     agent_stats = sim.agent_stats()
-    print(agent_stats)
+    print({i: round(v, 5) for i, v in agent_stats.items()})
     sim.plot_market()
 
 def grid_ex():
@@ -83,7 +83,8 @@ def grid_ex():
                            raversion_ran = g_risk_aversion_ran, 
                            hspread_ran = g_half_spread_ran, 
                            window_size_ran = g_window_size_range)
-    print(grid)
+
+    print({i: round(v, 5) for i, v in grid.items()})
 
 def bay_ex():
     """Example usage of the Optimiser class with Baysian search."""
@@ -104,10 +105,11 @@ def bay_ex():
                               hspread_ran = b_half_spread_ran, 
                               window_size_ran = b_window_size_range)
 
-    print(bay)
+    print({i: round(v, 5) for i, v in bay.items()})
 
 if __name__ == '__main__':
-    sim_ex() # Example of simulation.
-    #grid_ex() # Example of grid optimisation.
-    #bay_ex() # Example of bayesian optimisation.
-    pass
+    type = input("Enter Program Type (S = Simulation, G = Grid Search, B = Bayesian Search):\n").lower()
+    match type:
+        case "s": sim_ex()
+        case "g": grid_ex()
+        case "b": bay_ex()
