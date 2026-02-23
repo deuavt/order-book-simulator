@@ -62,8 +62,11 @@ class Optimiser:
         results = (future.result() for future in futures)
         max_sharpe = max(results, key=lambda x: x[0])
 
-        print(' ' * 30, end='\r')
-        return {'sharpe':max_sharpe[0], 'risk_aversion':max_sharpe[1], 'half_spread':max_sharpe[2], 'var_window_size':max_sharpe[3]}
+        print(' ' * 40, end='\r')
+        return {'sharpe': max_sharpe[0], 
+                'risk_aversion': max_sharpe[1], 
+                'half_spread': max_sharpe[2], 
+                'var_window_size': max_sharpe[3]}
 
     def __bay_trial(self, trial, n_runs, n_steps, raversion_ran, hspread_ran, window_size_ran):
         """Stage a trial for Bayesian search optimisation."""
@@ -77,8 +80,16 @@ class Optimiser:
         """Run a Bayesian search parameter optimiser."""
         objective = lambda trial: self.__bay_trial(trial, n_runs, n_steps, raversion_ran, hspread_ran, window_size_ran)
 
-        study = optuna.create_study(direction='maximize')
-        study.optimize(objective, n_trials=n_trials)
+        def update_progress(study, trial):
+            print(f"Bayesian Search Progress: {round(100 * len(study.trials) / n_trials, 2)}%", end="\r")
 
+        optuna.logging.set_verbosity(optuna.logging.WARNING)
+        study = optuna.create_study(direction='maximize')
+        study.optimize(objective, n_trials=n_trials, callbacks=[update_progress])
+
+        print(' ' * 40, end='\r')
         best = study.best_trial
-        return {'sharpe': best.value, 'risk_aversion': best.params['raversion'], 'half_spread': best.params['hspread'], 'var_window_size': best.params['window_size']}
+        return {'sharpe': best.value, 
+                'risk_aversion': best.params['raversion'], 
+                'half_spread': best.params['hspread'], 
+                'var_window_size': best.params['window_size']}
